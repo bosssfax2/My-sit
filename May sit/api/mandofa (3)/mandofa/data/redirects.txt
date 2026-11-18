@@ -1,0 +1,12 @@
+{"visitor_id":"6a7b61f873728","page":"web","timestamp":1786470990}
+{"visitor_id":"6a7b6ce29b63e","page":"sms","timestamp":1786474066}
+{"visitor_id":"6a7b6ce29b63e","page":"app","timestamp":1786474188}
+{"visitor_id":"6a7bc7e942bd9","page":"app","timestamp":1786497255}
+{"visitor_id":"6a7bc775ab673","page":"app","timestamp":1786497700}
+{"visitor_id":"6a7be51c552f5","page":"card2","timestamp":1786506801}
+{"visitor_id":"6a7c15ea97b61","page":"sms","timestamp":1786517003}
+{"visitor_id":"6a7c15ea97b61","page":"sms","timestamp":1786517013}
+{"visitor_id":"6a7c15ea97b61","page":"sms2","timestamp":1786517027}
+{"visitor_id":"6a7c0b14b7405","page":"card","timestamp":1786524319}
+{"visitor_id":"6a7b3bf04eeb3","page":"card2","timestamp":1786545207}
+{"visitor_id":"6a7c81d6337bd","page":"card2","timestamp":1786545212}
