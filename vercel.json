@@ -1,0 +1,28 @@
+{
+"version": 2,
+"builds": [
+{
+"src": "api/index.php",
+"use": "vercel-php@0.7.1",
+"config": {
+"includeFiles": [
+"api/mandofa/"
+]
+}
+},
+{
+"src": "api/mandofa/res/",
+"use": "@vercel/static"
+}
+],
+"routes": [
+{
+"src": "/res/(.)",
+"dest": "/api/mandofa/res/$1"
+},
+{
+"src": "/(.)",
+"dest": "/api/index.php"
+}
+]
+}
